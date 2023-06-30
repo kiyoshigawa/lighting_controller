@@ -2,11 +2,11 @@ use embedded_time::rate::Extensions;
 use lc::animations::{Animatable, Animation};
 use lc::{default_animations, LightingController, LogicalStrip};
 use lighting_controller as lc;
-use smart_leds::colors::*;
+use lighting_controller::colors::BLACK_A;
 
 fn main() {
     let frame_rate = 60.Hz();
-    let color_buffer = &mut [BLACK; 16];
+    let color_buffer = &mut [BLACK_A; 16];
     let mut ls = LogicalStrip::new(color_buffer);
     let a1 = &mut Animation::<16>::new(default_animations::ANI_TEST, frame_rate);
     let animations: [&mut dyn Animatable; 1] = [a1];

@@ -1,13 +1,12 @@
 use crate::animations::{Direction, MAX_OFFSET};
-use crate::colors::{color_lerp, Rainbow};
+use crate::colors::{color_lerp, Rainbow, BLACK_A};
 use crate::utility::{
     self, convert_ns_to_frames, get_random_offset, FadeRainbow, MarchingRainbow,
     MarchingRainbowMut, Progression, StatefulRainbow,
 };
 use embedded_time::rate::Hertz;
-use rgb::RGB8;
-use smart_leds::colors::*;
-type BgUpdater = fn(&mut Background, &mut [RGB8]);
+use rgb::RGBA8;
+type BgUpdater = fn(&mut Background, &mut [RGBA8]);
 
 /// Background Modes are rendered onto the animation LEDs first before any Foreground or Trigger
 /// animations. The other types of animation will overwrite any pixel data from the background that
@@ -54,18 +53,18 @@ impl Mode {
 }
 
 /// Sets all LEDs to off
-fn no_background(bg: &mut Background, segment: &mut [RGB8]) {
-    bg.fill_solid(BLACK, segment);
+fn no_background(bg: &mut Background, segment: &mut [RGBA8]) {
+    bg.fill_solid(BLACK_A, segment);
 }
 
 /// Sets all LEDs to the current rainbow color. Note that in this mode the color will only
 /// change when an external trigger of type `Background` is received.
-fn solid(bg: &mut Background, segment: &mut [RGB8]) {
+fn solid(bg: &mut Background, segment: &mut [RGBA8]) {
     handle_solid_trigger(bg);
     bg.fill_solid(bg.current_rainbow_color(), segment);
 }
 
-fn solid_fade(bg: &mut Background, segment: &mut [RGB8]) {
+fn solid_fade(bg: &mut Background, segment: &mut [RGBA8]) {
     handle_solid_trigger(bg);
     for led in segment {
         *led = bg.calculate_fade_color();
@@ -76,12 +75,12 @@ fn solid_fade(bg: &mut Background, segment: &mut [RGB8]) {
 }
 
 /// Fills the rainbow based on whatever value the offset is currently set to:
-fn fill_rainbow(bg: &mut Background, segment: &mut [RGB8]) {
+fn fill_rainbow(bg: &mut Background, segment: &mut [RGBA8]) {
     handle_rainbow_trigger(bg);
     bg.fill_rainbow(bg.offset, segment);
 }
 
-fn fill_rainbow_rotate(bg: &mut Background, segment: &mut [RGB8]) {
+fn fill_rainbow_rotate(bg: &mut Background, segment: &mut [RGBA8]) {
     handle_rainbow_trigger(bg);
 
     // This mode will take the value that the offset is set to and then adjust based on the
@@ -147,7 +146,7 @@ impl<'a> Background<'a> {
         }
     }
 
-    pub fn update(&mut self, segment: &mut [RGB8]) {
+    pub fn update(&mut self, segment: &mut [RGBA8]) {
         if let Some(f) = self.updater {
             f(self, segment);
         }
@@ -158,11 +157,11 @@ impl<'a> Background<'a> {
         self.has_been_triggered = false;
     }
 
-    fn fill_solid(&mut self, color: RGB8, segment: &mut [RGB8]) {
+    fn fill_solid(&mut self, color: RGBA8, segment: &mut [RGBA8]) {
         segment.iter_mut().for_each(|led| *led = color);
     }
 
-    fn fill_rainbow(&mut self, start_offset: u16, segment: &mut [RGB8]) {
+    fn fill_rainbow(&mut self, start_offset: u16, segment: &mut [RGBA8]) {
         let start_offset = start_offset as usize;
         let max_offset = MAX_OFFSET as usize;
         let led_count = segment.len();

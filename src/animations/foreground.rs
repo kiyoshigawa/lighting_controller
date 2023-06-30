@@ -1,16 +1,15 @@
 use crate::{
     animations::{Direction, MAX_OFFSET},
-    colors::Rainbow,
+    colors::{Rainbow, BLACK_A},
     utility::{
         convert_ns_to_frames, FadeRainbow, MarchingRainbow, MarchingRainbowMut, Progression,
         StatefulRainbow,
     },
 };
 use embedded_time::rate::Hertz;
-use rgb::RGB8;
-use smart_leds::colors::BLACK;
+use rgb::RGBA8;
 
-type FgUpdater = fn(&mut Foreground, &mut [RGB8]);
+type FgUpdater = fn(&mut Foreground, &mut [RGBA8]);
 
 /// Foreground modes are rendered second, and will animate over the background animation layer but
 /// below the trigger animations. Any trigger animations will overwrite the pixel data from the
@@ -59,38 +58,38 @@ impl Mode {
     }
 }
 
-fn marquee_solid(fg: &mut Foreground, segment: &mut [RGB8]) {
+fn marquee_solid(fg: &mut Foreground, segment: &mut [RGBA8]) {
     handle_marquee_trigger(fg);
     fg.increment_marquee_step();
     fg.fill_marquee(fg.current_fade_color(), segment);
 }
 
-fn marquee_solid_fixed(fg: &mut Foreground, segment: &mut [RGB8]) {
+fn marquee_solid_fixed(fg: &mut Foreground, segment: &mut [RGBA8]) {
     handle_marquee_trigger(fg);
     set_marquee_toggle(fg, segment.len());
     fg.fill_marquee(fg.current_fade_color(), segment);
 }
 
-fn marquee_fade(fg: &mut Foreground, segment: &mut [RGB8]) {
+fn marquee_fade(fg: &mut Foreground, segment: &mut [RGBA8]) {
     handle_marquee_trigger(fg);
     fg.increment_marquee_step();
     let color = fg.calculate_fade_color();
     fg.fill_marquee(color, segment);
 }
 
-fn marquee_fade_fixed(fg: &mut Foreground, segment: &mut [RGB8]) {
+fn marquee_fade_fixed(fg: &mut Foreground, segment: &mut [RGBA8]) {
     handle_marquee_trigger(fg);
     set_marquee_toggle(fg, segment.len());
     let color = fg.calculate_fade_color();
     fg.fill_marquee(color, segment);
 }
 
-fn vu_meter(fg: &mut Foreground, segment: &mut [RGB8]) {
+fn vu_meter(fg: &mut Foreground, segment: &mut [RGBA8]) {
     fg.current_fade_color();
     let led_count = segment.len();
     let last_on_led = fg.offset as usize / led_count;
     for led in &mut segment[last_on_led..] {
-        *led = BLACK;
+        *led = BLACK_A;
     }
 }
 
@@ -156,7 +155,7 @@ impl<'a> Foreground<'a> {
         }
     }
 
-    pub fn update(&mut self, segment: &mut [RGB8]) {
+    pub fn update(&mut self, segment: &mut [RGBA8]) {
         if let Some(f) = self.updater {
             f(self, segment);
         }
@@ -179,7 +178,7 @@ impl<'a> Foreground<'a> {
         }
     }
 
-    fn fill_marquee(&mut self, color: RGB8, segment: &mut [RGB8]) {
+    fn fill_marquee(&mut self, color: RGBA8, segment: &mut [RGBA8]) {
         for (led_index, led) in segment.iter_mut().enumerate() {
             // every time the index is evenly divisible by the number of subpixels, toggle the state
             // that the pixels should be set to:

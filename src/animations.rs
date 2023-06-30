@@ -4,7 +4,7 @@ pub mod trigger;
 
 use crate::utility::default_translation_array;
 use embedded_time::rate::Hertz;
-use rgb::RGB8;
+use rgb::RGBA8;
 
 /// Adjust MAX_NUM_* consts depending on RAM requirements:
 pub(crate) const MAX_NUM_ACTIVE_TRIGGERS: usize = 10;
@@ -44,7 +44,7 @@ pub struct AnimationParameters<'a> {
 /// To make a new animation,
 pub struct Animation<'a, const N_LED: usize> {
     translation_array: [usize; N_LED],
-    segment: [RGB8; N_LED],
+    segment: [RGBA8; N_LED],
     fg_state: foreground::Foreground<'a>,
     bg_state: background::Background<'a>,
     triggers: trigger::TriggerCollection<'a, MAX_NUM_ACTIVE_TRIGGERS>,
@@ -54,7 +54,7 @@ pub trait Animatable<'a> {
     fn update(&mut self);
     fn set_offset(&mut self, a_type: AnimationType, offset: u16);
     fn trigger(&mut self, params: &trigger::Parameters, frame_rate: Hertz);
-    fn segment(&self) -> &[RGB8];
+    fn segment(&self) -> &[RGBA8];
     fn translation_array(&self) -> &[usize];
 }
 
@@ -93,7 +93,7 @@ impl<'a, const N_LED: usize> Animatable<'a> for Animation<'a, N_LED> {
         }
     }
 
-    fn segment(&self) -> &[RGB8] {
+    fn segment(&self) -> &[RGBA8] {
         &self.segment[..]
     }
 
@@ -105,7 +105,7 @@ impl<'a, const N_LED: usize> Animatable<'a> for Animation<'a, N_LED> {
 impl<'a, const N_LED: usize> Animation<'a, N_LED> {
     pub fn new(parameters: AnimationParameters<'a>, frame_rate: Hertz) -> Self {
         let translation_array = default_translation_array(0);
-        let segment = [RGB8::default(); N_LED];
+        let segment = [RGBA8::default(); N_LED];
         let fg_state = foreground::Foreground::new(&parameters.fg, frame_rate);
         let bg_state = background::Background::new(&parameters.bg, frame_rate);
         let triggers = trigger::TriggerCollection::new(&parameters.trigger, frame_rate);

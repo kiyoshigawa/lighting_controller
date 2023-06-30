@@ -7,10 +7,10 @@ use crate::utility::{
 };
 use arrayvec::ArrayVec;
 use embedded_time::rate::Hertz;
-use rgb::RGB8;
+use rgb::RGBA8;
 
 pub type TriggerInit = fn(&mut Trigger, &mut TimedRainbows);
-pub type TriggerUpdater = fn(&mut Trigger, &mut [RGB8]);
+pub type TriggerUpdater = fn(&mut Trigger, &mut [RGBA8]);
 pub type TriggerBehavior = (Option<TriggerInit>, Option<TriggerUpdater>);
 
 /// These are the types of triggered animation effects that are possible with an animation. They can
@@ -149,7 +149,7 @@ impl<'a, const N: usize> TriggerCollection<'a, N> {
         let _ = self.triggers.try_push(new_trigger);
     }
 
-    pub fn update(&mut self, segment: &mut [RGB8]) {
+    pub fn update(&mut self, segment: &mut [RGBA8]) {
         for trigger in self.triggers.iter_mut() {
             trigger.update(segment)
         }
@@ -183,13 +183,13 @@ pub struct Trigger {
     frames: Progression,
     transition_frame: usize,
     direction: Direction,
-    color: RGB8,
+    color: RGBA8,
     updater: Option<TriggerUpdater>,
     pixels_per_pixel_group: usize,
 }
 
 impl Trigger {
-    pub fn new(init: &Parameters, color: RGB8, frame_rate: Hertz) -> Self {
+    pub fn new(init: &Parameters, color: RGBA8, frame_rate: Hertz) -> Self {
         let offset = init.starting_offset;
         let total_duration_ns = init.fade_in_time_ns + init.fade_out_time_ns;
 
@@ -213,7 +213,7 @@ impl Trigger {
         }
     }
 
-    pub fn update(&mut self, segment: &mut [RGB8]) {
+    pub fn update(&mut self, segment: &mut [RGBA8]) {
         if let Some(f) = self.updater {
             f(self, segment);
         }
@@ -247,7 +247,7 @@ fn get_trigger_fade_progress(trigger: &mut Trigger) -> Progression {
     progress
 }
 
-fn flash(trigger: &mut Trigger, segment: &mut [RGB8]) {
+fn flash(trigger: &mut Trigger, segment: &mut [RGBA8]) {
     let progress = get_trigger_fade_progress(trigger);
 
     for led in segment {
@@ -255,7 +255,7 @@ fn flash(trigger: &mut Trigger, segment: &mut [RGB8]) {
     }
 }
 
-fn color_pulse(trigger: &mut Trigger, segment: &mut [RGB8]) {
+fn color_pulse(trigger: &mut Trigger, segment: &mut [RGBA8]) {
     let progress = get_trigger_fade_progress(trigger);
 
     // the range will be always at least 1 led, up to pixels_per_pixel_group leds:
@@ -269,7 +269,7 @@ fn color_pulse(trigger: &mut Trigger, segment: &mut [RGB8]) {
     }
 }
 
-fn color_shot(trigger: &mut Trigger, segment: &mut [RGB8]) {
+fn color_shot(trigger: &mut Trigger, segment: &mut [RGBA8]) {
     let current_offset = shift_offset(trigger.offset, trigger.frames, trigger.direction) as usize;
     let offset_distance_between_leds = MAX_OFFSET as usize / segment.len();
 

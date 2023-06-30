@@ -5,7 +5,7 @@ use crate::{
 };
 use core::ops::Index;
 use embedded_time::rate::*;
-use rgb::RGB8;
+use rgb::RGBA8;
 
 pub fn convert_ns_to_frames(nanos: u64, frame_rate: Hertz) -> usize {
     (nanos * frame_rate.integer() as u64 / 1_000_000_000_u64) as usize
@@ -60,7 +60,7 @@ impl<'a> ReversibleRainbow<'a> {
 }
 
 impl<'a> Index<usize> for ReversibleRainbow<'a> {
-    type Output = RGB8;
+    type Output = RGBA8;
 
     fn index(&self, index: usize) -> &Self::Output {
         match self.is_forward {
@@ -74,7 +74,7 @@ pub trait FadeRainbow {
     fn rainbow(&self) -> &StatefulRainbow;
     fn frames(&self) -> &Progression;
 
-    fn calculate_fade_color(&self) -> RGB8 {
+    fn calculate_fade_color(&self) -> RGBA8 {
         let (rainbow, frames) = (self.rainbow(), self.frames());
 
         let current_color = rainbow.current_color();
@@ -85,7 +85,7 @@ pub trait FadeRainbow {
         current_color.lerp_with(next_color, *frames)
     }
 
-    fn current_fade_color(&self) -> RGB8 {
+    fn current_fade_color(&self) -> RGBA8 {
         self.rainbow().current_color()
     }
 }
@@ -94,7 +94,7 @@ pub trait MarchingRainbow {
     fn rainbow(&self) -> &StatefulRainbow;
     fn frames(&self) -> &Progression;
 
-    fn current_rainbow_color(&self) -> RGB8 {
+    fn current_rainbow_color(&self) -> RGBA8 {
         self.rainbow().current_color()
     }
 }
@@ -149,7 +149,7 @@ pub struct StatefulRainbow<'a> {
 }
 
 impl<'a> StatefulRainbow<'a> {
-    pub fn new(rainbow: &'a [RGB8], is_forward: bool) -> StatefulRainbow<'a> {
+    pub fn new(rainbow: &'a [RGBA8], is_forward: bool) -> StatefulRainbow<'a> {
         let position = Progression::new(rainbow.len());
         let backer = ReversibleRainbow {
             backer: rainbow,
@@ -158,7 +158,7 @@ impl<'a> StatefulRainbow<'a> {
         Self { backer, position }
     }
 
-    pub fn current_color(&self) -> RGB8 {
+    pub fn current_color(&self) -> RGBA8 {
         self.backer[self.position.get_current() as usize]
     }
 
@@ -170,11 +170,11 @@ impl<'a> StatefulRainbow<'a> {
         self.position.increment();
     }
 
-    pub fn peek_next_color(&self) -> RGB8 {
+    pub fn peek_next_color(&self) -> RGBA8 {
         self.backer[self.position.peek_next() as usize]
     }
 
-    pub fn peek_last_color(&self) -> RGB8 {
+    pub fn peek_last_color(&self) -> RGBA8 {
         self.backer[self.position.peek_prev() as usize]
     }
 
