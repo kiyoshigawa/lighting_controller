@@ -159,7 +159,7 @@ impl<'a> StatefulRainbow<'a> {
     }
 
     pub fn current_color(&self) -> RGBA8 {
-        self.backer[self.position.get_current() as usize]
+        self.backer[self.position.get_current()]
     }
 
     pub fn decrement(&mut self) {
@@ -171,11 +171,11 @@ impl<'a> StatefulRainbow<'a> {
     }
 
     pub fn peek_next_color(&self) -> RGBA8 {
-        self.backer[self.position.peek_next() as usize]
+        self.backer[self.position.peek_next()]
     }
 
     pub fn peek_last_color(&self) -> RGBA8 {
-        self.backer[self.position.peek_prev() as usize]
+        self.backer[self.position.peek_prev()]
     }
 
     pub fn reset(&mut self) {

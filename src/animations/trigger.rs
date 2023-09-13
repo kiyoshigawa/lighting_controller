@@ -2,8 +2,8 @@ use crate::animations::{Direction, MAX_OFFSET};
 use crate::colors;
 use crate::colors::ManipulatableColor;
 use crate::utility::{
-    convert_ns_to_frames, get_random_offset, shift_offset, FadeRainbow, MarchingRainbow,
-    MarchingRainbowMut, Progression, StatefulRainbow, TimedRainbows,
+    convert_ns_to_frames, shift_offset, FadeRainbow, MarchingRainbow, MarchingRainbowMut,
+    Progression, StatefulRainbow, TimedRainbows,
 };
 use arrayvec::ArrayVec;
 use embedded_time::rate::Hertz;
@@ -28,19 +28,19 @@ pub enum Mode {
     /// This will trigger a change in the foreground lighting, depending on the mode.
     Foreground,
 
-    /// This will cause a pulse of a single color to appear somewhere randomly along the led array.
-    /// It will fade in, then fade back out one time per trigger.
+    /// This will cause a pulse of a single color to appear at the starting_offset position in the
+    /// led array. It will fade in, then fade back out one time per trigger.
     /// Fade in and out times can be adjusted separately.
     ColorPulse,
 
-    /// This will cause a pulse that fades to appear somewhere randomly along the led array.
-    /// It will fade in, then fade back out one time per trigger, and its color will match the
-    /// animation's global trigger fade speed setting.
+    /// This will cause a pulse that fades to appear at the starting_offset position in the led
+    /// array. It will fade in, then fade back out one time per trigger, and its color will match
+    /// the animation's global trigger fade speed setting.
     /// All pulses will be the same color, and the color will change over time.
     /// Fade in and out times can be adjusted separately.
     ColorPulseFade,
 
-    /// This will cause a pulse of to appear somewhere randomly along the led array.
+    /// This will cause a pulse of to appear at the starting_offset position in the led array.
     /// It will fade in, then fade back out one time per trigger.
     /// Each pulse will be a new color in the order of the rainbow.
     /// fade in and out times can be adjusted separately.
@@ -286,7 +286,6 @@ fn color_shot(trigger: &mut Trigger, segment: &mut [RGBA8]) {
 
 fn init_color_pulse(trigger: &mut Trigger, _: &mut TimedRainbows) {
     trigger.direction = Direction::Stopped;
-    trigger.offset = get_random_offset();
 }
 
 fn init_color_pulse_fade(trigger: &mut Trigger, global: &mut TimedRainbows) {
