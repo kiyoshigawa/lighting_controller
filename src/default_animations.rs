@@ -86,3 +86,23 @@ pub const ANI_TEST: AnimationParameters = AnimationParameters {
     fg: FG_TEST,
     trigger: TRIGGER_TEST,
 };
+
+/// This can be used to trigger the background animation
+pub const TRIGGER_BG: trigger::Parameters = trigger::Parameters {
+    mode: trigger::Mode::Background,
+    direction: Direction::Positive,
+    fade_in_time_ns: 0,
+    fade_out_time_ns: 0,
+    starting_offset: 0,
+    pixels_per_pixel_group: 0,
+};
+
+/// This can be used to trigger the foreground animation
+pub const TRIGGER_FG: trigger::Parameters = trigger::Parameters {
+    mode: trigger::Mode::Foreground,
+    direction: Direction::Positive,
+    fade_in_time_ns: 0,
+    fade_out_time_ns: 0,
+    starting_offset: 0,
+    pixels_per_pixel_group: 0,
+};
