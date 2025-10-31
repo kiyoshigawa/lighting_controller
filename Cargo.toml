@@ -9,4 +9,3 @@ embedded-time = "0.12"
 rgb = "0.8"
 smart-leds = "0.3"
 smart-leds-trait = "0.2"
-fastrand = { version = "2.3.0", default-features = false }

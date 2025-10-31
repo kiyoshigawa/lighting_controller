@@ -4,11 +4,11 @@ use crate::{
     colors::Rainbow,
 };
 use core::ops::Index;
+use core::sync::atomic::{AtomicU32, Ordering};
 use embedded_time::rate::*;
-use fastrand::Rng;
 use rgb::RGB8;
 
-static mut RNG_CELL: Option<Rng> = None;
+static RNG: AtomicU32 = AtomicU32::new(42);
 
 pub fn convert_ns_to_frames(nanos: u64, frame_rate: Hertz) -> usize {
     (nanos * frame_rate.integer() as u64 / 1_000_000_000_u64) as usize
@@ -28,23 +28,25 @@ pub fn default_translation_array<const SIZE: usize>(start_at: usize) -> [usize; 
     result
 }
 
-pub fn set_random_seed(seed: u64) {
-    unsafe {
-        RNG_CELL = Some(Rng::with_seed(seed));
-    }
+pub fn set_random_seed(seed: u32) {
+    RNG.store(seed, Ordering::Relaxed)
+}
+
+fn gen_u64() -> u64 {
+    // Constants for WyRand taken from: https://github.com/wangyi-fudan/wyhash/blob/master/wyhash.h#L151
+    // Updated for the final v4.2 implementation with improved constants for better entropy output.
+    const WY_CONST_0: u64 = 0x2d35_8dcc_aa6c_78a5;
+    const WY_CONST_1: u64 = 0x8bb8_4b93_962e_acc9;
+
+    let rng: u64 = RNG.load(Ordering::Relaxed).into();
+    let s = rng.wrapping_add(WY_CONST_0);
+    RNG.store(s as u32, Ordering::Relaxed);
+    let t = u128::from(s) * u128::from(s ^ WY_CONST_1);
+    (t as u64) ^ (t >> 32) as u64
 }
 
 pub fn get_random_offset() -> u16 {
-    unsafe {
-        if RNG_CELL == None {
-            set_random_seed(42);
-        }
-        // This abomination brought to you by: https://doc.rust-lang.org/edition-guide/rust-2024/static-mut-references.html#safe-references
-        match &mut *&raw mut RNG_CELL {
-            Some(rng) => rng.u16(..),
-            _ => 42,
-        }
-    }
+    gen_u64() as u16
 }
 
 pub fn shift_offset(starting_offset: u16, frames: Progression, direction: Direction) -> u16 {
